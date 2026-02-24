@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Junior Dashboard – CampusMentor</title>
+  <link rel="stylesheet" href="../css/variables.css"/>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/sidebar.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <span class="logo-text">CampusMentor</span>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu</div>
+      <button class="nav-item active" data-section="dashboard" data-title="Dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-section="materials" data-title="Study Materials">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Study Materials
+      </button>
+      <button class="nav-item" data-section="projects" data-title="Projects">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        Projects
+      </button>
+      <button class="nav-item" data-section="ask-doubt" data-title="Ask a Doubt">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Ask a Doubt
+      </button>
+      <button class="nav-item" data-section="my-doubts" data-title="My Doubts">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        My Doubts <span class="nav-badge" id="openDoubtsCount" style="display:none">0</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar sidebar-user-avatar"></div>
+        <div class="user-info">
+          <div class="user-name sidebar-user-name truncate"></div>
+          <div class="user-role" style="color:var(--accent);font-weight:600">Junior Student</div>
+        </div>
+        <button onclick="logout()" title="Sign out" class="btn-icon btn-ghost" style="flex-shrink:0">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+    <header class="top-navbar">
+      <div class="navbar-left">
+        <button class="hamburger" id="hamburger">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="page-title" id="pageTitle">Dashboard</span>
+      </div>
+      <div class="navbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span id="themeIcon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+        </button>
+        <div style="position:relative">
+          <button class="notif-btn" id="notifBtn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="notif-count" id="notifCount" style="display:none">0</span>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header"><h4>Notifications</h4><button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button></div>
+            <div class="notif-list" id="notifList"><div class="notif-item"><div class="notif-text">No new notifications</div></div></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- DASHBOARD SECTION -->
+      <div class="page-section active" id="section-dashboard">
+        <div class="welcome-banner">
+          <h2>Welcome back, <span id="welcomeName"></span>! 👋</h2>
+          <p>Here's what's happening in your academic journey today.</p>
+        </div>
+        <div class="grid-4" style="margin-bottom:24px" id="statsGrid">
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div><div class="stat-value" id="statMaterials">–</div><div class="stat-label">Available Materials</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/></svg></div><div class="stat-value" id="statProjects">–</div><div class="stat-label">Available Projects</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/></svg></div><div class="stat-value" id="statOpenDoubts">–</div><div class="stat-label">Open Doubts</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div class="stat-value" id="statAnswered">–</div><div class="stat-label">Doubts Answered</div></div>
+        </div>
+        <div style="margin-bottom:24px">
+          <div class="flex justify-between items-center" style="margin-bottom:12px">
+            <h3 style="font-size:16px;font-weight:700">Recent Materials</h3>
+            <button class="btn btn-ghost btn-sm" onclick="navigateTo('materials')">View all →</button>
+          </div>
+          <div class="grid-3" id="recentMaterials"><div class="skeleton" style="height:120px;border-radius:12px"></div><div class="skeleton" style="height:120px;border-radius:12px"></div><div class="skeleton" style="height:120px;border-radius:12px"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between items-center" style="margin-bottom:12px">
+            <h3 style="font-size:16px;font-weight:700">Recent Projects</h3>
+            <button class="btn btn-ghost btn-sm" onclick="navigateTo('projects')">View all →</button>
+          </div>
+          <div class="grid-3" id="recentProjects"><div class="skeleton" style="height:120px;border-radius:12px"></div><div class="skeleton" style="height:120px;border-radius:12px"></div><div class="skeleton" style="height:120px;border-radius:12px"></div></div>
+        </div>
+      </div>
+
+      <!-- MATERIALS SECTION -->
+      <div class="page-section" id="section-materials">
+        <div class="section-title">Study Materials</div>
+        <div class="section-subtitle">Browse faculty-approved study resources</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="materialSearch" placeholder="Search materials..."/>
+          <select class="form-select subj-select" id="materialSubject"></select>
+          <select class="form-select dept-select" id="materialDept"></select>
+        </div>
+        <div class="grid-3" id="materialsGrid"></div>
+      </div>
+
+      <!-- PROJECTS SECTION -->
+      <div class="page-section" id="section-projects">
+        <div class="section-title">Student Projects</div>
+        <div class="section-subtitle">Explore projects by your seniors</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="projectSearch" placeholder="Search projects..."/>
+          <select class="form-select dept-select" id="projectDept"></select>
+        </div>
+        <div class="grid-3" id="projectsGrid"></div>
+      </div>
+
+      <!-- ASK DOUBT SECTION -->
+      <div class="page-section" id="section-ask-doubt">
+        <div class="section-title">Ask a Doubt</div>
+        <div class="section-subtitle">Your question will be assigned to a senior in your department</div>
+        <div class="card" style="max-width:580px">
+          <form id="doubtForm">
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Subject</label>
+                <select class="form-select subj-select" id="doubtSubject" required></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Department</label>
+                <select class="form-select dept-select" id="doubtDept" required></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your Question</label>
+              <textarea class="form-textarea" id="doubtQuestion" placeholder="Describe your doubt in detail (minimum 20 characters)..." rows="5" required></textarea>
+              <div class="form-hint"><span id="charCount">0</span> characters (min 20)</div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="doubtBtn">Submit Doubt</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- MY DOUBTS SECTION -->
+      <div class="page-section" id="section-my-doubts">
+        <div class="section-title">My Doubts</div>
+        <div class="section-subtitle">Track all your submitted doubts and their answers</div>
+        <div id="myDoubtsContainer"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/constants.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/theme.js"></script>
+<script src="../js/toast.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/pages/junior.js"></script>
+</body>
+</html>

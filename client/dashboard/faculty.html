@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Faculty Dashboard – CampusMentor</title>
+  <link rel="stylesheet" href="../css/variables.css"/>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/sidebar.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <div class="logo-icon"><svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+      <span class="logo-text">CampusMentor</span>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <button class="nav-item active" data-section="dashboard" data-title="Dashboard"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</button>
+      <div class="nav-section-label">Review</div>
+      <button class="nav-item" data-section="approvals" data-title="Approvals"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Approvals <span class="nav-badge" id="pendingCount" style="display:none">0</span></button>
+      <div class="nav-section-label">Browse</div>
+      <button class="nav-item" data-section="all-materials" data-title="All Materials"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>All Materials</button>
+      <button class="nav-item" data-section="all-projects" data-title="All Projects"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/></svg>All Projects</button>
+      <div class="nav-section-label">Manage</div>
+      <button class="nav-item" data-section="users" data-title="Manage Users"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Manage Users</button>
+      <button class="nav-item" data-section="analytics" data-title="Analytics"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar sidebar-user-avatar"></div>
+        <div class="user-info"><div class="user-name sidebar-user-name truncate"></div><div class="user-role" style="color:#7c3aed;font-weight:600">Faculty</div></div>
+        <button onclick="logout()" title="Sign out" class="btn-icon btn-ghost" style="flex-shrink:0"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="top-navbar">
+      <div class="navbar-left">
+        <button class="hamburger" id="hamburger"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <span class="page-title" id="pageTitle">Dashboard</span>
+      </div>
+      <div class="navbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span></button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- DASHBOARD -->
+      <div class="page-section active" id="section-dashboard">
+        <div class="welcome-banner">
+          <h2>Welcome, Prof. <span id="welcomeName"></span>! 🏫</h2>
+          <p>Manage approvals, monitor students, and keep the platform healthy.</p>
+        </div>
+        <div class="grid-3" style="margin-bottom:24px">
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-value" id="statPending">–</div><div class="stat-label">Pending Approvals</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-value" id="statActiveUsers">–</div><div class="stat-label">Active Users</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg></div><div class="stat-value" id="statMaterials">–</div><div class="stat-label">Total Materials</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/></svg></div><div class="stat-value" id="statProjects">–</div><div class="stat-label">Total Projects</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div class="stat-value" id="statEscalated">–</div><div class="stat-label">Escalated Doubts</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg></div><div class="stat-value" id="statSeniors">–</div><div class="stat-label">Total Seniors</div></div>
+        </div>
+      </div>
+
+      <!-- APPROVALS -->
+      <div class="page-section" id="section-approvals">
+        <div class="section-title">Pending Approvals</div>
+        <div class="section-subtitle">Review and approve student submissions</div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchApprovalsTab('materials')">Materials</button>
+          <button class="tab-btn" onclick="switchApprovalsTab('projects')">Projects</button>
+        </div>
+        <div id="approvalsContent"></div>
+      </div>
+
+      <!-- ALL MATERIALS -->
+      <div class="page-section" id="section-all-materials">
+        <div class="section-title">All Materials</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="allMatSearch" placeholder="Search..."/>
+          <select class="form-select subj-select" id="allMatSubject"></select>
+          <select class="form-select dept-select" id="allMatDept"></select>
+        </div>
+        <div class="grid-3" id="allMaterialsGrid"></div>
+      </div>
+
+      <!-- ALL PROJECTS -->
+      <div class="page-section" id="section-all-projects">
+        <div class="section-title">All Projects</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="allProjSearch" placeholder="Search..."/>
+          <select class="form-select dept-select" id="allProjDept"></select>
+        </div>
+        <div class="grid-3" id="allProjectsGrid"></div>
+      </div>
+
+      <!-- MANAGE USERS -->
+      <div class="page-section" id="section-users">
+        <div class="section-title">Manage Users</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="userSearch" placeholder="Search by name or email..."/>
+          <select class="form-select" id="userRoleFilter">
+            <option value="">All Roles</option>
+            <option value="junior">Junior</option>
+            <option value="senior">Senior</option>
+            <option value="faculty">Faculty</option>
+          </select>
+          <select class="form-select dept-select" id="userDeptFilter"></select>
+        </div>
+        <div class="table-wrapper"><table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Points</th><th>Active</th><th>Joined</th></tr></thead>
+          <tbody id="usersTableBody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Loading...</td></tr></tbody>
+        </table></div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="page-section" id="section-analytics">
+        <div class="section-title">Analytics</div>
+        <div class="grid-2" style="margin-bottom:24px">
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:16px">🏆 Top Mentors</h3>
+            <div id="topMentors"></div>
+          </div>
+          <div class="card">
+            <h3 style="font-weight:700;margin-bottom:16px">📄 Most Viewed Materials</h3>
+            <div id="topMaterials"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:24px">
+          <h3 style="font-weight:700;margin-bottom:16px">📊 Department Engagement</h3>
+          <canvas id="deptChart" height="200"></canvas>
+        </div>
+        <div class="card">
+          <h3 style="font-weight:700;margin-bottom:16px">⚠ Escalated Doubts</h3>
+          <div id="escalatedList"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header"><h3>Reject Submission</h3><button onclick="closeRejectModal()" class="btn-icon btn-ghost">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px">Please provide a reason for rejection so the student can improve:</p>
+      <textarea class="form-textarea" id="rejectReason" placeholder="e.g. Content is incomplete, Missing important topics..." rows="4"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmReject()">Reject</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../js/constants.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/theme.js"></script>
+<script src="../js/toast.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/pages/faculty.js"></script>
+</body>
+</html>

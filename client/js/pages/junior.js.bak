@@ -1,0 +1,322 @@
+// =============================================
+// CampusMentor - Junior Dashboard JS
+// =============================================
+
+// ── Auth Guard: ensure logged in as junior ──
+const currentUser = requireRole(['junior']);
+
+// ── Set welcome name ──
+document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
+
+// ── Load data when section changes ──
+document.addEventListener('sectionChanged', (e) => {
+  const s = e.detail.section;
+  if (s === 'sec-dashboard')  loadDashboard();
+  if (s === 'sec-materials')  loadMaterials();
+  if (s === 'sec-projects')   loadProjects();
+  if (s === 'sec-my-doubts')  loadMyDoubts();
+});
+
+// ── Load on first render ──
+loadDashboard();
+loadNotifications();
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const [stats, mats, projs] = await Promise.all([
+      API.get('/api/users/my-stats'),
+      API.get('/api/materials?status=approved&limit=6'),
+      API.get('/api/projects?status=approved&limit=6')
+    ]);
+
+    // Stat cards
+    document.getElementById('dashStats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+        <div class="stat-value">${stats.totalMaterials || 0}</div>
+        <div class="stat-label">Materials Available</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div>
+        <div class="stat-value">${stats.totalProjects || 0}</div>
+        <div class="stat-label">Projects Available</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg></div>
+        <div class="stat-value">${stats.openDoubts || 0}</div>
+        <div class="stat-label">Open Doubts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg></div>
+        <div class="stat-value">${stats.answeredDoubts || 0}</div>
+        <div class="stat-label">Answered Doubts</div>
+      </div>
+    `;
+
+    // Recent materials row
+    const matRow = document.getElementById('recentMaterialsRow');
+    matRow.innerHTML = mats.materials?.length
+      ? mats.materials.map(m => materialCardHTML(m)).join('')
+      : '<p style="color:var(--text-muted);font-size:0.85rem;">No materials yet.</p>';
+
+    // Recent projects row
+    const projRow = document.getElementById('recentProjectsRow');
+    projRow.innerHTML = projs.projects?.length
+      ? projs.projects.map(p => projectCardHTML(p)).join('')
+      : '<p style="color:var(--text-muted);font-size:0.85rem;">No projects yet.</p>';
+
+  } catch (err) {
+    toast.error('Failed to load dashboard: ' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════════
+// MATERIALS
+// ══════════════════════════════════════════════
+async function loadMaterials() {
+  const grid = document.getElementById('materialsGrid');
+  grid.innerHTML = skeletonCards(4);
+
+  try {
+    const search = document.getElementById('matSearch')?.value || '';
+    const subject = document.getElementById('matSubject')?.value || '';
+    const dept  = document.getElementById('matDept')?.value || '';
+
+    const params = new URLSearchParams({ status: 'approved' });
+    if (search)  params.set('search', search);
+    if (subject) params.set('subject', subject);
+    if (dept)    params.set('department', dept);
+
+    const data = await API.get(`/api/materials?${params}`);
+    const materials = data.materials || [];
+
+    grid.innerHTML = materials.length
+      ? materials.map(m => materialCardHTML(m)).join('')
+      : emptyState('No materials found.', 'Try adjusting your search or filters.');
+  } catch (err) {
+    grid.innerHTML = `<p style="color:var(--danger);">Failed to load: ${err.message}</p>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════════════════
+async function loadProjects() {
+  const grid = document.getElementById('projectsGrid');
+  grid.innerHTML = skeletonCards(4);
+
+  try {
+    const search = document.getElementById('projSearch')?.value || '';
+    const dept   = document.getElementById('projDept')?.value || '';
+
+    const params = new URLSearchParams({ status: 'approved' });
+    if (search) params.set('search', search);
+    if (dept)   params.set('department', dept);
+
+    const data = await API.get(`/api/projects?${params}`);
+    const projects = data.projects || [];
+
+    grid.innerHTML = projects.length
+      ? projects.map(p => projectCardHTML(p)).join('')
+      : emptyState('No projects found.', 'Try adjusting your filters.');
+  } catch (err) {
+    grid.innerHTML = `<p style="color:var(--danger);">Failed to load: ${err.message}</p>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// ASK DOUBT
+// ══════════════════════════════════════════════
+const doubtForm = document.getElementById('doubtForm');
+doubtForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('doubtSubmitBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+
+  const subject  = document.getElementById('doubtSubject').value;
+  const department = document.getElementById('doubtDept').value;
+  const question = document.getElementById('doubtQuestion').value.trim();
+
+  if (question.length < 20) {
+    toast.warning('Question must be at least 20 characters.');
+    btn.classList.remove('loading'); btn.disabled = false;
+    return;
+  }
+
+  try {
+    const data = await API.post('/api/doubts', { subject, department, question });
+    toast.success('Doubt submitted! A senior will answer soon.');
+    doubtForm.reset();
+
+    // Navigate to my doubts and show new one
+    document.querySelector('.nav-link[data-section="sec-my-doubts"]')?.click();
+  } catch (err) {
+    toast.error(err.message || 'Failed to submit doubt.');
+  } finally {
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+});
+
+// ══════════════════════════════════════════════
+// MY DOUBTS
+// ══════════════════════════════════════════════
+async function loadMyDoubts() {
+  const list = document.getElementById('myDoubtsList');
+  list.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">Loading...</div>';
+
+  try {
+    const data = await API.get('/api/doubts/my');
+    const doubts = data.doubts || [];
+
+    if (!doubts.length) {
+      list.innerHTML = emptyState('No doubts yet.', 'Use "Ask a Doubt" to submit your first question.');
+      return;
+    }
+
+    list.innerHTML = doubts.map(d => `
+      <div class="doubt-card" id="doubt-${d.id}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;">
+          <div class="doubt-question">${escapeHTML(d.question)}</div>
+          <span class="badge badge-${d.status}">${capitalize(d.status)}</span>
+        </div>
+        <div class="card-meta">
+          <span>${escapeHTML(d.subject)}</span> · <span>${escapeHTML(d.department)}</span> · <span>${timeAgo(d.created_at)}</span>
+        </div>
+        ${d.status === 'answered' ? `
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="toggleAnswer('doubt-${d.id}')">
+            View Answer ▾
+          </button>
+          <div class="doubt-answer">
+            <strong>Answer:</strong><br/>${escapeHTML(d.answer || '')}
+          </div>
+        ` : d.status === 'escalated' ? `
+          <div class="badge badge-escalated" style="margin-top:8px;">Escalated to Faculty</div>
+        ` : ''}
+      </div>
+    `).join('');
+
+  } catch (err) {
+    list.innerHTML = `<p style="color:var(--danger);">Failed to load: ${err.message}</p>`;
+  }
+}
+
+function toggleAnswer(cardId) {
+  document.getElementById(cardId)?.classList.toggle('expanded');
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════
+async function loadNotifications() {
+  try {
+    const data = await API.get('/api/users/notifications');
+    const notifs = data.notifications || [];
+    const unread = notifs.filter(n => !n.is_read).length;
+
+    const badge = document.getElementById('notifBadge');
+    if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.add('show'); }
+
+    const list = document.getElementById('notifList');
+    list.innerHTML = notifs.length
+      ? notifs.map(n => `
+          <div class="notif-item ${n.is_read ? '' : 'unread'}">
+            <p>${escapeHTML(n.message)}</p>
+            <small>${timeAgo(n.created_at)}</small>
+          </div>
+        `).join('')
+      : '<div class="notif-empty">No notifications yet.</div>';
+  } catch {
+    // Silently fail for notifications
+  }
+}
+
+document.getElementById('notifBtn')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('notifDropdown')?.classList.toggle('open');
+});
+document.addEventListener('click', () => document.getElementById('notifDropdown')?.classList.remove('open'));
+
+document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
+  try {
+    await API.patch('/api/users/notifications/read-all', {});
+    document.getElementById('notifBadge')?.classList.remove('show');
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+  } catch {}
+});
+
+// ══════════════════════════════════════════════
+// CARD TEMPLATES
+// ══════════════════════════════════════════════
+function materialCardHTML(m) {
+  return `
+    <div class="material-card">
+      <div class="card-title">${escapeHTML(m.title)}</div>
+      <div class="card-meta">
+        <span class="badge badge-approved">${escapeHTML(m.subject || '')}</span>
+        <span>${escapeHTML(m.department || '')}</span>
+      </div>
+      <div class="card-meta">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        ${m.views || 0} views · by ${escapeHTML(m.uploader_name || 'Unknown')}
+      </div>
+      <div class="card-footer">
+        <span style="font-size:0.75rem;color:var(--text-muted);">${timeAgo(m.created_at)}</span>
+        ${m.file_url ? `<a href="${BASE_URL}${m.file_url}" target="_blank" class="btn btn-primary btn-sm">Download</a>` : '<span class="btn btn-secondary btn-sm" style="opacity:0.5;cursor:default;">No file</span>'}
+      </div>
+    </div>
+  `;
+}
+
+function projectCardHTML(p) {
+  const techTags = (p.tech_stack || '').split(',').map(t => t.trim()).filter(Boolean);
+  return `
+    <div class="project-card">
+      <div class="card-title">${escapeHTML(p.title)}</div>
+      <div class="card-meta">${escapeHTML(p.department || '')}</div>
+      <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.5;flex:1;">
+        ${escapeHTML((p.abstract || '').substring(0, 120))}${p.abstract?.length > 120 ? '...' : ''}
+      </p>
+      ${techTags.length ? `<div class="tags">${techTags.slice(0,4).map(t => `<span class="tag">${escapeHTML(t)}</span>`).join('')}</div>` : ''}
+      <div class="card-footer" style="gap:6px;">
+        ${p.github_link  ? `<a href="${escapeHTML(p.github_link)}"  target="_blank" class="btn btn-secondary btn-sm">GitHub</a>` : ''}
+        ${p.demo_video_link ? `<a href="${escapeHTML(p.demo_video_link)}" target="_blank" class="btn btn-primary btn-sm">Demo</a>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════
+// UTILITY HELPERS
+// ══════════════════════════════════════════════
+function skeletonCards(n) {
+  return Array(n).fill(`
+    <div class="material-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text" style="width:60%;"></div>
+    </div>
+  `).join('');
+}
+
+function emptyState(title, msg) {
+  return `
+    <div class="empty-state" style="grid-column:1/-1;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <h3>${title}</h3>
+      <p>${msg}</p>
+    </div>
+  `;
+}
+
+function escapeHTML(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str || ''));
+  return d.innerHTML;
+}
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}

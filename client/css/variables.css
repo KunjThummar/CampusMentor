@@ -1,0 +1,61 @@
+/* ===== CAMPUSMENTOR CSS VARIABLES ===== */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --bg-primary: #f7f7f5;
+  --bg-sidebar: #eeece8;
+  --bg-card: #ffffff;
+  --bg-hover: #e8e6e1;
+  --bg-input: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --text-muted: #9b9b9b;
+  --text-inverse: #ffffff;
+  --accent: #c96442;
+  --accent-hover: #b55538;
+  --accent-light: #f5ede9;
+  --border-color: #dddbd6;
+  --border-focus: #c96442;
+  --success: #2d7a4f;
+  --success-bg: #edf7f1;
+  --warning: #b45309;
+  --warning-bg: #fef3c7;
+  --danger: #c0392b;
+  --danger-bg: #fdecea;
+  --info: #1d6fa4;
+  --info-bg: #e8f4fd;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  --sidebar-width: 256px;
+  --transition: all 0.2s ease;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #212121;
+  --bg-sidebar: #1a1a1a;
+  --bg-card: #2f2f2f;
+  --bg-hover: #3a3a3a;
+  --bg-input: #383838;
+  --text-primary: #ececec;
+  --text-secondary: #a0a0a0;
+  --text-muted: #6b6b6b;
+  --accent: #d4754f;
+  --accent-hover: #e08060;
+  --accent-light: #2d1f1a;
+  --border-color: #3d3d3d;
+  --success-bg: #1a2e22;
+  --warning-bg: #2a1f0a;
+  --danger-bg: #2e1515;
+  --info-bg: #0d2035;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+}

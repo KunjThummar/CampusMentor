@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Senior Dashboard – CampusMentor</title>
+  <link rel="stylesheet" href="../css/variables.css"/>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/sidebar.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+</head>
+<body>
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="../index.html" class="sidebar-logo">
+      <div class="logo-icon"><svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+      <span class="logo-text">CampusMentor</span>
+    </a>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <button class="nav-item active" data-section="dashboard" data-title="Dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
+      </button>
+      <div class="nav-section-label">Browse</div>
+      <button class="nav-item" data-section="materials" data-title="Study Materials">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Study Materials
+      </button>
+      <button class="nav-item" data-section="projects" data-title="Projects">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/></svg>Projects
+      </button>
+      <div class="nav-section-label">Contribute</div>
+      <button class="nav-item" data-section="upload-material" data-title="Upload Material">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Material
+      </button>
+      <button class="nav-item" data-section="upload-project" data-title="Upload Project">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Upload Project
+      </button>
+      <button class="nav-item" data-section="solve-doubts" data-title="Solve Doubts">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Solve Doubts <span class="nav-badge" id="pendingDoubtsCount" style="display:none">0</span>
+      </button>
+      <div class="nav-section-label">My Activity</div>
+      <button class="nav-item" data-section="my-uploads" data-title="My Uploads">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>My Uploads
+      </button>
+      <button class="nav-item" data-section="my-points" data-title="My Points">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>My Points
+      </button>
+      <button class="nav-item" data-section="certificate" data-title="Certificate">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>Certificate
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar sidebar-user-avatar"></div>
+        <div class="user-info">
+          <div class="user-name sidebar-user-name truncate"></div>
+          <div class="user-role" style="color:var(--accent);font-weight:600">Senior Student</div>
+        </div>
+        <button onclick="logout()" title="Sign out" class="btn-icon btn-ghost" style="flex-shrink:0">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="top-navbar">
+      <div class="navbar-left">
+        <button class="hamburger" id="hamburger"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <span class="page-title" id="pageTitle">Dashboard</span>
+      </div>
+      <div class="navbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span></button>
+        <div style="position:relative">
+          <button class="notif-btn" id="notifBtn"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span class="notif-count" id="notifCount" style="display:none">0</span></button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-header"><h4>Notifications</h4><button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button></div>
+            <div class="notif-list" id="notifList"><div class="notif-item"><div class="notif-text">No new notifications</div></div></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- DASHBOARD -->
+      <div class="page-section active" id="section-dashboard">
+        <div class="welcome-banner">
+          <h2>Hello, <span id="welcomeName"></span>! 🎓</h2>
+          <p>Keep contributing to earn points and help your juniors grow!</p>
+        </div>
+        <div class="grid-4" style="margin-bottom:24px">
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="stat-value" id="statPoints">–</div><div class="stat-label">Total Points</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/></svg></div><div class="stat-value" id="statApproved">–</div><div class="stat-label">Approved Uploads</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-value" id="statPending">–</div><div class="stat-label">Pending Review</div></div>
+          <div class="card stat-card"><div class="stat-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="stat-value" id="statSolved">–</div><div class="stat-label">Doubts Solved</div></div>
+        </div>
+        <div class="card" style="margin-bottom:24px">
+          <div class="flex justify-between items-center" style="margin-bottom:12px">
+            <h3 style="font-weight:700">Points Progress</h3>
+            <span id="pointsPercent" style="font-size:13px;color:var(--text-muted)">0 / 100</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="pointsBar" style="width:0%"></div></div>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:8px" id="pointsMsg">Keep contributing to reach 100 points!</p>
+        </div>
+      </div>
+
+      <!-- MATERIALS BROWSE -->
+      <div class="page-section" id="section-materials">
+        <div class="section-title">Study Materials</div>
+        <div class="section-subtitle">Browse all faculty-approved materials</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="materialSearch" placeholder="Search materials..."/>
+          <select class="form-select subj-select" id="materialSubject"></select>
+          <select class="form-select dept-select" id="materialDept"></select>
+        </div>
+        <div class="grid-3" id="materialsGrid"></div>
+      </div>
+
+      <!-- PROJECTS BROWSE -->
+      <div class="page-section" id="section-projects">
+        <div class="section-title">Student Projects</div>
+        <div class="section-subtitle">Explore all approved projects</div>
+        <div class="search-filters">
+          <input class="form-input" type="text" id="projectSearch" placeholder="Search projects..."/>
+          <select class="form-select dept-select" id="projectDept"></select>
+        </div>
+        <div class="grid-3" id="projectsGrid"></div>
+      </div>
+
+      <!-- UPLOAD MATERIAL -->
+      <div class="page-section" id="section-upload-material">
+        <div class="section-title">Upload Study Material</div>
+        <div class="section-subtitle">Share your notes, slides, or documents with juniors</div>
+        <div class="card" style="max-width:600px">
+          <form id="materialForm" enctype="multipart/form-data">
+            <div class="form-group">
+              <label class="form-label">Title *</label>
+              <input class="form-input" type="text" id="matTitle" placeholder="e.g. Data Structures Complete Notes" required/>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Subject *</label>
+                <select class="form-select subj-select" id="matSubject" required></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Department *</label>
+                <select class="form-select dept-select" id="matDept" required></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Year</label>
+              <select class="form-select" id="matYear">
+                <option value="">Select Year</option>
+                <option value="1">1st Year</option><option value="2">2nd Year</option>
+                <option value="3">3rd Year</option><option value="4">4th Year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" id="matDesc" placeholder="Brief description of this material..." rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">File (PDF, DOC, PPTX – max 10MB) *</label>
+              <input class="form-input" type="file" id="matFile" accept=".pdf,.doc,.docx,.ppt,.pptx" required/>
+            </div>
+            <button type="submit" class="btn btn-primary" id="matBtn">Upload Material</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- UPLOAD PROJECT -->
+      <div class="page-section" id="section-upload-project">
+        <div class="section-title">Upload Project</div>
+        <div class="section-subtitle">Share your project to inspire juniors</div>
+        <div class="card" style="max-width:600px">
+          <form id="projectForm" enctype="multipart/form-data">
+            <div class="form-group">
+              <label class="form-label">Project Title *</label>
+              <input class="form-input" type="text" id="projTitle" placeholder="e.g. Smart Attendance System" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Abstract / Description *</label>
+              <textarea class="form-textarea" id="projAbstract" placeholder="Describe what your project does, the problem it solves..." rows="4" required></textarea>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Department *</label>
+                <select class="form-select dept-select" id="projDept" required></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tech Stack</label>
+                <input class="form-input" type="text" id="projTech" placeholder="e.g. React, Node.js, MySQL"/>
+                <div class="form-hint">Comma-separated</div>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">GitHub Link</label>
+                <input class="form-input" type="url" id="projGithub" placeholder="https://github.com/..."/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Demo Video Link</label>
+                <input class="form-input" type="url" id="projDemo" placeholder="https://youtube.com/..."/>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">PPT File</label>
+                <input class="form-input" type="file" id="projPPT" accept=".ppt,.pptx"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Report PDF</label>
+                <input class="form-input" type="file" id="projReport" accept=".pdf"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Team Members</label>
+              <div id="teamMembers">
+                <div class="grid-2" style="margin-bottom:8px">
+                  <input class="form-input" type="text" placeholder="Member name" name="memberName[]"/>
+                  <input class="form-input" type="text" placeholder="Role (e.g. Backend Dev)" name="memberRole[]"/>
+                </div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addTeamMember()">+ Add Member</button>
+            </div>
+            <button type="submit" class="btn btn-primary" id="projBtn">Upload Project</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- SOLVE DOUBTS -->
+      <div class="page-section" id="section-solve-doubts">
+        <div class="section-title">Solve Doubts</div>
+        <div class="section-subtitle">Help juniors by answering their questions (+5 points each)</div>
+        <div id="assignedDoubtsContainer"></div>
+      </div>
+
+      <!-- MY UPLOADS -->
+      <div class="page-section" id="section-my-uploads">
+        <div class="section-title">My Uploads</div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('uploads','materials-tab')">Materials</button>
+          <button class="tab-btn" onclick="switchTab('uploads','projects-tab')">Projects</button>
+        </div>
+        <div class="tab-content active" id="uploads-materials-tab">
+          <div id="myMaterialsGrid" class="grid-3"></div>
+        </div>
+        <div class="tab-content" id="uploads-projects-tab">
+          <div id="myProjectsGrid" class="grid-3"></div>
+        </div>
+      </div>
+
+      <!-- MY POINTS -->
+      <div class="page-section" id="section-my-points">
+        <div class="section-title">My Points</div>
+        <div class="section-subtitle">Track your contributions and rewards</div>
+        <div class="points-summary" style="margin-bottom:20px">
+          <div class="points-number" id="pointsTotal">–</div>
+          <div class="points-label">Total Points Earned</div>
+          <div class="progress-bar" style="margin-top:16px;background:rgba(255,255,255,0.2)">
+            <div class="progress-fill" id="pointsBarFull" style="width:0%;background:white"></div>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Action</th><th>Points</th><th>Date</th></tr></thead>
+            <tbody id="pointsLogBody"><tr><td colspan="3" style="text-align:center;color:var(--text-muted)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CERTIFICATE -->
+      <div class="page-section" id="section-certificate">
+        <div class="section-title">Certificate of Achievement</div>
+        <div class="section-subtitle">Earn 100 points to unlock your certificate</div>
+        <div id="certificateContainer"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/constants.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/theme.js"></script>
+<script src="../js/toast.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/pages/senior.js"></script>
+</body>
+</html>
