@@ -1,5 +1,5 @@
 // ===== CENTRALIZED API WRAPPER =====
-const BASE_URL = 'https://campusmentor-9exv.onrender.com'; // Update after deploy
+const BASE_URL = 'https://campusmentor-9exv.onrender.com/api'; // Update after deploy
 
 async function apiCall(endpoint, options = {}) {
   const token = localStorage.getItem('cm_token');
