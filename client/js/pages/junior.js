@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadStats() {
   try {
-    const data = await API.get('/api/analytics/junior-stats');
+    const data = await API.get('/analytics/junior-stats');
     document.getElementById('statMaterials').textContent = data.materials || 0;
     document.getElementById('statProjects').textContent = data.projects || 0;
     document.getElementById('statOpenDoubts').textContent = data.openDoubts || 0;
@@ -72,7 +72,7 @@ async function loadStats() {
 
 async function loadRecentMaterials() {
   try {
-    const data = await API.get('/api/materials?status=approved&limit=3');
+    const data = await API.get('/materials?status=approved&limit=3');
     const grid = document.getElementById('recentMaterials');
     if (!data.materials?.length) { grid.innerHTML = '<p style="color:var(--text-muted)">No materials yet.</p>'; return; }
     grid.innerHTML = data.materials.map(m => materialCard(m)).join('');
@@ -81,7 +81,7 @@ async function loadRecentMaterials() {
 
 async function loadRecentProjects() {
   try {
-    const data = await API.get('/api/projects?status=approved&limit=3');
+    const data = await API.get('/projects?status=approved&limit=3');
     const grid = document.getElementById('recentProjects');
     if (!data.projects?.length) { grid.innerHTML = '<p style="color:var(--text-muted)">No projects yet.</p>'; return; }
     grid.innerHTML = data.projects.map(p => projectCard(p)).join('');
@@ -99,7 +99,7 @@ async function loadMaterials() {
     if (search) params.set('search', search);
     if (subject) params.set('subject', subject);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/materials?' + params);
+    const data = await API.get('/materials?' + params);
     if (!data.materials?.length) { grid.innerHTML = emptyState('No materials found', 'Try adjusting your search filters.'); return; }
     grid.innerHTML = data.materials.map(m => materialCard(m)).join('');
   } catch (err) { grid.innerHTML = emptyState('Failed to load materials'); }
@@ -114,7 +114,7 @@ async function loadProjects() {
     const params = new URLSearchParams({ status: 'approved', limit: 30 });
     if (search) params.set('search', search);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/projects?' + params);
+    const data = await API.get('/projects?' + params);
     if (!data.projects?.length) { grid.innerHTML = emptyState('No projects found'); return; }
     grid.innerHTML = data.projects.map(p => projectCard(p)).join('');
   } catch (err) { grid.innerHTML = emptyState('Failed to load projects'); }
@@ -124,7 +124,7 @@ async function loadMyDoubts() {
   const container = document.getElementById('myDoubtsContainer');
   container.innerHTML = '<div class="skeleton" style="height:100px;border-radius:12px;margin-bottom:12px"></div>'.repeat(3);
   try {
-    const data = await API.get('/api/doubts/my');
+    const data = await API.get('/doubts/my');
     if (!data.doubts?.length) { container.innerHTML = emptyState('No doubts yet', 'Ask your first doubt from the menu!'); return; }
     container.innerHTML = data.doubts.map(d => doubtCard(d)).join('');
   } catch (err) { container.innerHTML = emptyState('Failed to load doubts'); }
@@ -137,7 +137,7 @@ async function submitDoubt(e) {
   const btn = document.getElementById('doubtBtn');
   btn.disabled = true; btn.textContent = 'Submitting...';
   try {
-    await API.post('/api/doubts', {
+    await API.post('/doubts', {
       subject: document.getElementById('doubtSubject').value,
       department: document.getElementById('doubtDept').value,
       question
@@ -153,7 +153,7 @@ async function submitDoubt(e) {
 
 async function loadNotifications() {
   try {
-    const data = await API.get('/api/users/notifications');
+    const data = await API.get('/users/notifications');
     const unread = data.notifications?.filter(n => !n.is_read).length || 0;
     const countEl = document.getElementById('notifCount');
     if (unread > 0) { countEl.textContent = unread; countEl.style.display = ''; }
@@ -168,10 +168,10 @@ async function loadNotifications() {
 }
 
 async function markRead(id) {
-  try { await API.patch('/api/users/notifications/' + id + '/read'); loadNotifications(); } catch {}
+  try { await API.patch('/users/notifications/' + id + '/read'); loadNotifications(); } catch {}
 }
 async function markAllRead() {
-  try { await API.patch('/api/users/notifications/read-all'); loadNotifications(); showToast('All marked as read', 'success'); } catch {}
+  try { await API.patch('/users/notifications/read-all'); loadNotifications(); showToast('All marked as read', 'success'); } catch {}
 }
 
 function materialCard(m) {

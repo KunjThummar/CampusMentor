@@ -99,7 +99,7 @@
     btn.disabled = true; btn.textContent = 'Creating account...';
 
     try {
-      const data = await API.post('/api/auth/register', {
+      const data = await API.post('/auth/register', {
         name: document.getElementById('name').value.trim(),
         email: document.getElementById('email').value.trim(),
         password,

@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadStats() {
   try {
-    const data = await API.get('/api/analytics/senior-stats');
+    const data = await API.get('/analytics/senior-stats');
     document.getElementById('statPoints').textContent = data.points || 0;
     document.getElementById('statApproved').textContent = data.approved || 0;
     document.getElementById('statPending').textContent = data.pending || 0;
@@ -82,7 +82,7 @@ async function loadMaterials() {
     if (search) params.set('search', search);
     if (subject) params.set('subject', subject);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/materials?' + params);
+    const data = await API.get('/materials?' + params);
     grid.innerHTML = data.materials?.length ? data.materials.map(m => materialCard(m)).join('') : emptyState('No materials found');
   } catch { grid.innerHTML = emptyState('Failed to load'); }
 }
@@ -96,7 +96,7 @@ async function loadProjects() {
     const params = new URLSearchParams({ status: 'approved', limit: 30 });
     if (search) params.set('search', search);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/projects?' + params);
+    const data = await API.get('/projects?' + params);
     grid.innerHTML = data.projects?.length ? data.projects.map(p => projectCard(p)).join('') : emptyState('No projects found');
   } catch { grid.innerHTML = emptyState('Failed to load'); }
 }
@@ -105,7 +105,7 @@ async function loadAssignedDoubts() {
   const container = document.getElementById('assignedDoubtsContainer');
   container.innerHTML = '<div class="skeleton" style="height:120px;border-radius:12px;margin-bottom:12px"></div>'.repeat(3);
   try {
-    const data = await API.get('/api/doubts/assigned');
+    const data = await API.get('/doubts/assigned');
     if (!data.doubts?.length) { container.innerHTML = emptyState('No doubts assigned', 'Great work! Check back later.'); return; }
     container.innerHTML = data.doubts.map(d => assignedDoubtCard(d)).join('');
   } catch { container.innerHTML = emptyState('Failed to load doubts'); }
@@ -115,7 +115,7 @@ async function loadMyMaterials() {
   const grid = document.getElementById('myMaterialsGrid');
   grid.innerHTML = '<div class="skeleton" style="height:150px;border-radius:12px"></div>'.repeat(3);
   try {
-    const data = await API.get('/api/materials/my');
+    const data = await API.get('/materials/my');
     grid.innerHTML = data.materials?.length ? data.materials.map(m => myMaterialCard(m)).join('') : emptyState('No uploads yet', 'Upload your first material!');
   } catch { grid.innerHTML = emptyState('Failed to load'); }
 }
@@ -124,14 +124,14 @@ async function loadMyProjects() {
   const grid = document.getElementById('myProjectsGrid');
   grid.innerHTML = '<div class="skeleton" style="height:150px;border-radius:12px"></div>'.repeat(3);
   try {
-    const data = await API.get('/api/projects/my');
+    const data = await API.get('/projects/my');
     grid.innerHTML = data.projects?.length ? data.projects.map(p => myProjectCard(p)).join('') : emptyState('No projects yet', 'Upload your first project!');
   } catch { grid.innerHTML = emptyState('Failed to load'); }
 }
 
 async function loadMyPoints() {
   try {
-    const data = await API.get('/api/users/points');
+    const data = await API.get('/users/points');
     document.getElementById('pointsTotal').textContent = data.points || 0;
     const pct = Math.min((data.points || 0), 100);
     document.getElementById('pointsBarFull').style.width = pct + '%';
@@ -148,7 +148,7 @@ async function loadMyPoints() {
 async function loadCertificate() {
   const container = document.getElementById('certificateContainer');
   try {
-    const data = await API.get('/api/certificates/my');
+    const data = await API.get('/certificates/my');
     if (data.certificate) {
       const u = getUser();
       container.innerHTML = `
@@ -158,11 +158,11 @@ async function loadCertificate() {
           </div>
           <h2 style="font-size:22px;font-weight:800;margin-bottom:8px">🎉 Certificate Unlocked!</h2>
           <p style="color:var(--text-secondary);margin-bottom:24px">Congratulations! You've earned <strong>${data.certificate.total_points} points</strong> by mentoring juniors.</p>
-          <a href="${BASE_URL}/api/certificates/download/${data.certificate.id}" class="btn btn-primary btn-lg" target="_blank">Download PDF Certificate</a>
+          <a href="${BASE_URL}/certificates/download/${data.certificate.id}" class="btn btn-primary btn-lg" target="_blank">Download PDF Certificate</a>
           <p style="font-size:12px;color:var(--text-muted);margin-top:12px">Issued on ${formatDate(data.certificate.issued_at)}</p>
         </div>`;
     } else {
-      const statsData = await API.get('/api/analytics/senior-stats');
+      const statsData = await API.get('/analytics/senior-stats');
       const pts = statsData.points || 0;
       container.innerHTML = `
         <div class="card" style="max-width:500px;text-align:center;padding:40px">
@@ -190,7 +190,7 @@ async function uploadMaterial(e) {
     fd.append('year', document.getElementById('matYear').value);
     fd.append('description', document.getElementById('matDesc').value);
     fd.append('file', document.getElementById('matFile').files[0]);
-    const data = await API.post('/api/materials', fd);
+    const data = await API.post('/materials', fd);
     showToast('Material uploaded! Awaiting faculty approval.', 'success');
     document.getElementById('materialForm').reset();
     // Immediately add to My Uploads list
@@ -223,7 +223,7 @@ async function uploadProject(e) {
     });
     fd.append('team_members', JSON.stringify(members));
 
-    const data = await API.post('/api/projects', fd);
+    const data = await API.post('/projects', fd);
     showToast('Project uploaded! Awaiting faculty approval.', 'success');
     document.getElementById('projectForm').reset();
   } catch (err) { showToast(err.message || 'Upload failed', 'error'); }
@@ -235,7 +235,7 @@ async function submitAnswer(doubtId) {
   const answer = textarea?.value?.trim();
   if (!answer || answer.length < 10) { showToast('Please write a proper answer (min 10 chars)', 'warning'); return; }
   try {
-    await API.patch('/api/doubts/' + doubtId + '/answer', { answer });
+    await API.patch('/doubts/' + doubtId + '/answer', { answer });
     showToast('+5 points earned! Answer submitted.', 'success');
     loadAssignedDoubts();
     loadStats();
@@ -244,7 +244,7 @@ async function submitAnswer(doubtId) {
 
 async function loadNotifications() {
   try {
-    const data = await API.get('/api/users/notifications');
+    const data = await API.get('/users/notifications');
     const unread = data.notifications?.filter(n => !n.is_read).length || 0;
     const countEl = document.getElementById('notifCount');
     if (unread > 0) { countEl.textContent = unread; countEl.style.display = ''; }
@@ -258,8 +258,8 @@ async function loadNotifications() {
   } catch {}
 }
 
-async function markRead(id) { try { await API.patch('/api/users/notifications/' + id + '/read'); loadNotifications(); } catch {} }
-async function markAllRead() { try { await API.patch('/api/users/notifications/read-all'); loadNotifications(); showToast('All marked as read', 'success'); } catch {} }
+async function markRead(id) { try { await API.patch('/users/notifications/' + id + '/read'); loadNotifications(); } catch {} }
+async function markAllRead() { try { await API.patch('/users/notifications/read-all'); loadNotifications(); showToast('All marked as read', 'success'); } catch {} }
 
 function addTeamMember() {
   const div = document.createElement('div');

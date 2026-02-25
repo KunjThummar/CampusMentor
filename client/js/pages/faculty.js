@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadStats() {
   try {
-    const data = await API.get('/api/analytics/faculty-stats');
+    const data = await API.get('/analytics/faculty-stats');
     document.getElementById('statPending').textContent = data.pending || 0;
     document.getElementById('statActiveUsers').textContent = data.activeUsers || 0;
     document.getElementById('statMaterials').textContent = data.materials || 0;
@@ -59,12 +59,12 @@ async function loadApprovals() {
   container.innerHTML = '<div class="skeleton" style="height:100px;border-radius:12px;margin-bottom:12px"></div>'.repeat(3);
   try {
     if (approvalsTab === 'materials') {
-      const data = await API.get('/api/materials?status=pending&limit=50');
+      const data = await API.get('/materials?status=pending&limit=50');
       container.innerHTML = data.materials?.length
         ? data.materials.map(m => approvalCard(m, 'material')).join('')
         : emptyState('No pending materials', 'All caught up! 🎉');
     } else {
-      const data = await API.get('/api/projects?status=pending&limit=50');
+      const data = await API.get('/projects?status=pending&limit=50');
       container.innerHTML = data.projects?.length
         ? data.projects.map(p => approvalCard(p, 'project')).join('')
         : emptyState('No pending projects', 'All caught up! 🎉');
@@ -83,7 +83,7 @@ async function loadAllMaterials() {
     if (search) params.set('search', search);
     if (subject) params.set('subject', subject);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/materials?' + params);
+    const data = await API.get('/materials?' + params);
     grid.innerHTML = data.materials?.length ? data.materials.map(m => materialBrowseCard(m)).join('') : emptyState('No materials found');
   } catch { grid.innerHTML = emptyState('Failed to load'); }
 }
@@ -97,7 +97,7 @@ async function loadAllProjects() {
     const params = new URLSearchParams({ limit: 50 });
     if (search) params.set('search', search);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/projects?' + params);
+    const data = await API.get('/projects?' + params);
     grid.innerHTML = data.projects?.length ? data.projects.map(p => projectBrowseCard(p)).join('') : emptyState('No projects found');
   } catch { grid.innerHTML = emptyState('Failed to load'); }
 }
@@ -113,7 +113,7 @@ async function loadUsers() {
     if (search) params.set('search', search);
     if (role) params.set('role', role);
     if (dept) params.set('department', dept);
-    const data = await API.get('/api/users?' + params);
+    const data = await API.get('/users?' + params);
     if (!data.users?.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No users found</td></tr>'; return; }
     tbody.innerHTML = data.users.map(u => `<tr>
       <td><strong>${escHtml(u.name)}</strong></td>
@@ -132,7 +132,7 @@ async function loadUsers() {
 
 async function loadAnalytics() {
   try {
-    const data = await API.get('/api/analytics/faculty-full');
+    const data = await API.get('/analytics/faculty-full');
     // Top Mentors
     const mentorsEl = document.getElementById('topMentors');
     mentorsEl.innerHTML = data.topMentors?.length
@@ -188,7 +188,7 @@ async function loadAnalytics() {
 
 async function approveItem(id, type) {
   try {
-    const endpoint = type === 'material' ? `/api/materials/${id}/approve` : `/api/projects/${id}/approve`;
+    const endpoint = type === 'material' ? `/materials/${id}/approve` : `/projects/${id}/approve`;
     await API.patch(endpoint);
     showToast(`${type === 'material' ? 'Material' : 'Project'} approved! Points awarded to uploader.`, 'success');
     loadApprovals(); loadStats();
@@ -206,7 +206,7 @@ async function confirmReject() {
   if (!reason) { showToast('Please provide a rejection reason', 'warning'); return; }
   try {
     const { id, type } = rejectTarget;
-    const endpoint = type === 'material' ? `/api/materials/${id}/reject` : `/api/projects/${id}/reject`;
+    const endpoint = type === 'material' ? `/materials/${id}/reject` : `/projects/${id}/reject`;
     await API.patch(endpoint, { reason });
     showToast('Submission rejected. Student has been notified.', 'info');
     closeRejectModal(); loadApprovals(); loadStats();
@@ -215,7 +215,7 @@ async function confirmReject() {
 
 async function toggleUser(id, active) {
   try {
-    await API.patch(`/api/users/${id}/toggle-active`, { is_active: active });
+    await API.patch(`/users/${id}/toggle-active`, { is_active: active });
     showToast(`User ${active ? 'activated' : 'deactivated'} successfully`, 'success');
     loadStats();
   } catch (err) { showToast(err.message || 'Failed to update', 'error'); loadUsers(); }

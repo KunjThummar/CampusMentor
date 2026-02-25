@@ -75,7 +75,7 @@
     const password = document.getElementById('password').value;
 
     try {
-      const data = await API.post('/api/auth/login', { email, password });
+      const data = await API.post('/auth/login', { email, password });
       saveAuth(data.token, data.user);
       showToast('Login successful! Redirecting...', 'success');
       const routes = { junior: 'dashboard/junior.html', senior: 'dashboard/senior.html', faculty: 'dashboard/faculty.html' };
