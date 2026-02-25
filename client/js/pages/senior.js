@@ -68,7 +68,7 @@ async function loadStats() {
 
     const badge = document.getElementById('pendingDoubtsCount');
     if (data.assignedDoubts > 0) { badge.textContent = data.assignedDoubts; badge.style.display = ''; }
-  } catch (err) { console.error(err); }
+  } catch (err) { console.error('Stats error:', err); }
 }
 
 async function loadMaterials() {
@@ -108,7 +108,11 @@ async function loadAssignedDoubts() {
     const data = await API.get('/doubts/assigned');
     if (!data.doubts?.length) { container.innerHTML = emptyState('No doubts assigned', 'Great work! Check back later.'); return; }
     container.innerHTML = data.doubts.map(d => assignedDoubtCard(d)).join('');
-  } catch { container.innerHTML = emptyState('Failed to load doubts'); }
+  } catch (err) { 
+    console.error('Error loading doubts:', err);
+    showToast(err.message || 'Failed to load doubts', 'error');
+    container.innerHTML = emptyState('Failed to load doubts', err.message || ''); 
+  }
 }
 
 async function loadMyMaterials() {

@@ -11,12 +11,23 @@ async function apiCall(endpoint, options = {}) {
 
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
-    const data = await res.json();
+    const contentType = res.headers.get('content-type');
+    let data;
+    
+    if (contentType && contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error(`Non-JSON response from ${endpoint}:`, { status: res.status, contentType, text: text.slice(0, 500) });
+      throw new Error(`Server error (${res.status}): ${res.statusText}`);
+    }
+    
     if (!res.ok) {
       throw new Error(data.message || `Error ${res.status}`);
     }
     return data;
   } catch (err) {
+    console.error(`API Error on ${endpoint}:`, err);
     throw err;
   }
 }
