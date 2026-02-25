@@ -1,8 +1,6 @@
 // ===== CENTRALIZED API WRAPPER =====
 // Automatically use local server in development, deployed server in production
-const BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:5000/api'
-  : 'https://campusmentor-9exv.onrender.com/api';
+const BASE_URL = 'https://campusmentor-9exv.onrender.com/api';
 
 async function apiCall(endpoint, options = {}) {
   const token = localStorage.getItem('cm_token');
