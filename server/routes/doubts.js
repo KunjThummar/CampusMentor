@@ -17,12 +17,19 @@ router.get('/my', auth, async (req, res) => {
 // GET /api/doubts/assigned — senior's assigned doubts
 router.get('/assigned', auth, async (req, res) => {
   try {
+    // Fallback if department is missing from token (older tokens)
+    if (!req.user.department) {
+      const u = await db.query('SELECT department FROM users WHERE id=$1', [req.user.id]);
+      req.user.department = u.rows[0]?.department;
+    }
+
     const result = await db.query(
       `SELECT d.*, u.name as asker_name FROM doubts d LEFT JOIN users u ON u.id = d.asker_id
-       WHERE d.assigned_senior_id = $1 ORDER BY d.created_at DESC`, [req.user.id]
+       WHERE d.assigned_senior_id = $1 OR (d.department = $2 AND d.status = 'open')
+       ORDER BY d.created_at DESC`, [req.user.id, req.user.department]
     );
     res.json({ doubts: result.rows });
-  } catch { res.status(500).json({ message: 'Failed' }); }
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Failed' }); }
 });
 
 // POST /api/doubts — submit new doubt
@@ -56,7 +63,7 @@ router.post('/', auth, async (req, res) => {
     // Notify assigned senior
     if (assignedSeniorId) {
       await db.query('INSERT INTO notifications (user_id, message, type) VALUES ($1,$2,$3)',
-        [assignedSeniorId, `You have a new doubt assigned: "${question.slice(0,60)}..."`, 'info']);
+        [assignedSeniorId, `You have a new doubt assigned: "${question.slice(0, 60)}..."`, 'info']);
     }
 
     res.status(201).json({ doubt: result.rows[0] });
@@ -70,8 +77,18 @@ router.patch('/:id/answer', auth, async (req, res) => {
   try {
     const doubt = await db.query('SELECT * FROM doubts WHERE id = $1', [req.params.id]);
     if (!doubt.rows.length) return res.status(404).json({ message: 'Doubt not found' });
-    if (doubt.rows[0].assigned_senior_id !== req.user.id && doubt.rows[0].faculty_id !== req.user.id)
-      return res.status(403).json({ message: 'Not assigned to you' });
+
+    const d = doubt.rows[0];
+    const isAssigned = d.assigned_senior_id === req.user.id || d.faculty_id === req.user.id;
+    // Fallback for department
+    if (!req.user.department) {
+      const u = await db.query('SELECT department FROM users WHERE id=$1', [req.user.id]);
+      req.user.department = u.rows[0]?.department;
+    }
+    const isDeptSenior = req.user.role === 'senior' && d.department === req.user.department && d.status === 'open';
+
+    if (!isAssigned && !isDeptSenior)
+      return res.status(403).json({ message: 'Not assigned to you or your department' });
 
     await db.query('UPDATE doubts SET status=$1, answer=$2, answered_by=$3 WHERE id=$4',
       ['answered', answer, req.user.id, req.params.id]);

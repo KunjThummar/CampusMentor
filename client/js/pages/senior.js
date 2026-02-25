@@ -24,11 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (section === 'certificate') loadCertificate();
   });
 
-  ['materialSearch','materialSubject','materialDept'].forEach(id => {
+  ['materialSearch', 'materialSubject', 'materialDept'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', debounce(loadMaterials, 400));
     document.getElementById(id)?.addEventListener('change', loadMaterials);
   });
-  ['projectSearch','projectDept'].forEach(id => {
+  ['projectSearch', 'projectDept'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', debounce(loadProjects, 400));
     document.getElementById(id)?.addEventListener('change', loadProjects);
   });
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const userDept = getUser()?.department;
   if (userDept) setTimeout(() => {
-    ['matDept','projDept'].forEach(id => { const el = document.getElementById(id); if (el) el.value = userDept; });
+    ['matDept', 'projDept'].forEach(id => { const el = document.getElementById(id); if (el) el.value = userDept; });
   }, 200);
 });
 
@@ -67,7 +67,9 @@ async function loadStats() {
       : `${100 - (data.points || 0)} more points to unlock your certificate!`;
 
     const badge = document.getElementById('pendingDoubtsCount');
-    if (data.assignedDoubts > 0) { badge.textContent = data.assignedDoubts; badge.style.display = ''; }
+    const doubtsCount = data.assignedDoubts || 0;
+    if (doubtsCount > 0) { badge.textContent = doubtsCount; badge.style.display = ''; }
+    else { badge.style.display = 'none'; }
   } catch (err) { console.error('Stats error:', err); }
 }
 
@@ -106,14 +108,22 @@ async function loadAssignedDoubts() {
   container.innerHTML = '<div class="skeleton" style="height:120px;border-radius:12px;margin-bottom:12px"></div>'.repeat(3);
   try {
     const data = await API.get('/doubts/assigned');
-    if (!data.doubts?.length) { container.innerHTML = emptyState('No doubts assigned', 'Great work! Check back later.'); return; }
-    container.innerHTML = data.doubts.map(d => assignedDoubtCard(d)).join('');
-  } catch (err) { 
+    if (!data.doubts?.length) {
+      container.innerHTML = emptyState('No doubts in your department yet', 'When juniors ask doubts, they will appear here for you to answer.');
+      return;
+    }
+    const open = data.doubts.filter(d => d.status === 'open').length;
+    const info = open > 0
+      ? `<div style="margin-bottom:16px;padding:12px 16px;background:var(--accent-light);border-radius:8px;font-size:13px;color:var(--accent);font-weight:600">💬 ${open} open doubt${open > 1 ? 's' : ''} need${open === 1 ? 's' : ''} your attention! (+5 pts each)</div>`
+      : '';
+    container.innerHTML = info + data.doubts.map(d => assignedDoubtCard(d)).join('');
+  } catch (err) {
     console.error('Error loading doubts:', err);
     showToast(err.message || 'Failed to load doubts', 'error');
-    container.innerHTML = emptyState('Failed to load doubts', err.message || ''); 
+    container.innerHTML = emptyState('Failed to load doubts', err.message || '');
   }
 }
+
 
 async function loadMyMaterials() {
   const grid = document.getElementById('myMaterialsGrid');
@@ -254,16 +264,16 @@ async function loadNotifications() {
     if (unread > 0) { countEl.textContent = unread; countEl.style.display = ''; }
     const list = document.getElementById('notifList');
     if (!data.notifications?.length) return;
-    list.innerHTML = data.notifications.slice(0,8).map(n => `
+    list.innerHTML = data.notifications.slice(0, 8).map(n => `
       <div class="notif-item ${!n.is_read ? 'unread' : ''}" onclick="markRead(${n.id})">
         <div class="notif-text">${escHtml(n.message)}</div>
         <div class="notif-time">${timeAgo(n.created_at)}</div>
       </div>`).join('');
-  } catch {}
+  } catch { }
 }
 
-async function markRead(id) { try { await API.patch('/users/notifications/' + id + '/read'); loadNotifications(); } catch {} }
-async function markAllRead() { try { await API.patch('/users/notifications/read-all'); loadNotifications(); showToast('All marked as read', 'success'); } catch {} }
+async function markRead(id) { try { await API.patch('/users/notifications/' + id + '/read'); loadNotifications(); } catch { } }
+async function markAllRead() { try { await API.patch('/users/notifications/read-all'); loadNotifications(); showToast('All marked as read', 'success'); } catch { } }
 
 function addTeamMember() {
   const div = document.createElement('div');
@@ -274,26 +284,28 @@ function addTeamMember() {
 }
 
 function switchTab(prefix, tabId) {
-  document.querySelectorAll(`#section-${prefix === 'uploads' ? 'my-uploads' : prefix} .tab-btn`).forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll(`[id^="${prefix}-"]`).forEach(c => c.classList.remove('active'));
-  document.getElementById(prefix + '-' + tabId.split('-').pop() + '-tab') && document.getElementById(prefix + '-' + tabId).classList.add('active');
+  const sectionId = prefix === 'uploads' ? 'my-uploads' : prefix;
+  document.querySelectorAll(`#section-${sectionId} .tab-btn`).forEach(b => b.classList.remove('active'));
+  if (event) event.target.classList.add('active');
+  document.querySelectorAll(`.tab-content[id^="${prefix}-"]`).forEach(c => c.classList.remove('active'));
+  const el = document.getElementById(prefix + '-' + tabId);
+  if (el) el.classList.add('active');
 }
 
 function materialCard(m) {
   return `<div class="material-card"><div><div class="material-title">${escHtml(m.title)}</div>
-    <div class="material-meta" style="margin-top:8px"><span class="badge badge-approved">${escHtml(m.subject||'')}</span></div></div>
+    <div class="material-meta" style="margin-top:8px"><span class="badge badge-approved">${escHtml(m.subject || '')}</span></div></div>
     <div class="flex justify-between items-center" style="margin-top:12px">
-      <span class="material-info">👁 ${m.views||0} views</span>
+      <span class="material-info">👁 ${m.views || 0} views</span>
       ${m.file_url ? `<a href="${BASE_URL}${m.file_url}" target="_blank" class="btn btn-primary btn-sm">Download</a>` : ''}
     </div></div>`;
 }
 
 function myMaterialCard(m) {
   return `<div class="material-card"><div><div class="material-title">${escHtml(m.title)}</div>
-    <div class="material-meta" style="margin-top:8px"><span class="badge badge-${m.status}">${m.status}</span><span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">${escHtml(m.subject||'')}</span></div></div>
+    <div class="material-meta" style="margin-top:8px"><span class="badge badge-${m.status}">${m.status}</span><span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">${escHtml(m.subject || '')}</span></div></div>
     <div style="font-size:12px;color:var(--text-muted);margin-top:8px">${formatDate(m.created_at)}</div>
-    ${m.status==='rejected'&&m.rejection_reason?`<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">Rejected: ${escHtml(m.rejection_reason)}</div>`:''}
+    ${m.status === 'rejected' && m.rejection_reason ? `<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">Rejected: ${escHtml(m.rejection_reason)}</div>` : ''}
   </div>`;
 }
 
@@ -301,19 +313,19 @@ function myProjectCard(p) {
   return `<div class="project-card"><div class="project-title">${escHtml(p.title)}</div>
     <div class="material-meta" style="margin-top:8px"><span class="badge badge-${p.status}">${p.status}</span></div>
     <div style="font-size:12px;color:var(--text-muted);margin-top:8px">${formatDate(p.created_at)}</div>
-    ${p.status==='rejected'&&p.rejection_reason?`<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">Rejected: ${escHtml(p.rejection_reason)}</div>`:''}
+    ${p.status === 'rejected' && p.rejection_reason ? `<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">Rejected: ${escHtml(p.rejection_reason)}</div>` : ''}
   </div>`;
 }
 
 function projectCard(p) {
-  const tags = (p.tech_stack||'').split(',').filter(Boolean).slice(0,4);
+  const tags = (p.tech_stack || '').split(',').filter(Boolean).slice(0, 4);
   return `<div class="project-card"><div class="project-title">${escHtml(p.title)}</div>
-    <div class="project-abstract">${escHtml(p.abstract||'')}</div>
-    <div class="project-tech">${tags.map(t=>`<span class="tech-tag">${escHtml(t.trim())}</span>`).join('')}</div>
-    <div class="project-footer"><span class="material-info">👁 ${p.views||0}</span>
+    <div class="project-abstract">${escHtml(p.abstract || '')}</div>
+    <div class="project-tech">${tags.map(t => `<span class="tech-tag">${escHtml(t.trim())}</span>`).join('')}</div>
+    <div class="project-footer"><span class="material-info">👁 ${p.views || 0}</span>
       <div class="flex gap-8">
-        ${p.github_link?`<a href="${escHtml(p.github_link)}" target="_blank" class="btn btn-secondary btn-sm">GitHub</a>`:''}
-        ${p.demo_video_link?`<a href="${escHtml(p.demo_video_link)}" target="_blank" class="btn btn-primary btn-sm">Demo</a>`:''}
+        ${p.github_link ? `<a href="${escHtml(p.github_link)}" target="_blank" class="btn btn-secondary btn-sm">GitHub</a>` : ''}
+        ${p.demo_video_link ? `<a href="${escHtml(p.demo_video_link)}" target="_blank" class="btn btn-primary btn-sm">Demo</a>` : ''}
       </div></div></div>`;
 }
 
@@ -322,20 +334,20 @@ function assignedDoubtCard(d) {
   return `<div class="doubt-card">
     <div class="doubt-header"><div class="doubt-question">${escHtml(d.question)}</div>${getBadge(d.status)}</div>
     <div class="doubt-meta">
-      <span>${escHtml(d.subject||'')}</span> · <span>${escHtml(d.department||'')}</span> · 
-      <span>Asked by: <strong>${escHtml(d.asker_name||'Student')}</strong></span> ·
+      <span>${escHtml(d.subject || '')}</span> · <span>${escHtml(d.department || '')}</span> · 
+      <span>Asked by: <strong>${escHtml(d.asker_name || 'Student')}</strong></span> ·
       <span class="countdown">⏱ ${hrs}h remaining before escalation</span>
     </div>
     ${d.status === 'open' ? `
     <div style="margin-top:12px">
       <textarea class="form-textarea" id="answer-${d.id}" placeholder="Write your answer here..." rows="3"></textarea>
       <button class="btn btn-success btn-sm" style="margin-top:8px" onclick="submitAnswer(${d.id})">Submit Answer (+5 pts)</button>
-    </div>` : `<div class="doubt-answer"><div class="doubt-answer-label">Your Answer</div><div class="doubt-answer-text">${escHtml(d.answer||'')}</div></div>`}
+    </div>` : `<div class="doubt-answer"><div class="doubt-answer-label">Your Answer</div><div class="doubt-answer-text">${escHtml(d.answer || '')}</div></div>`}
   </div>`;
 }
 
-function emptyState(title, msg='') {
+function emptyState(title, msg = '') {
   return `<div class="empty-state" style="grid-column:1/-1"><h3>${title}</h3><p>${msg}</p></div>`;
 }
-function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escHtml(str) { return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }

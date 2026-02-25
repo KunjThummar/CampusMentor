@@ -25,12 +25,18 @@ router.get('/junior-stats', auth, async (req, res) => {
 // GET /api/analytics/senior-stats
 router.get('/senior-stats', auth, async (req, res) => {
   try {
+    // Fallback for department if not in token
+    if (!req.user.department) {
+      const u = await db.query('SELECT department FROM users WHERE id=$1', [req.user.id]);
+      req.user.department = u.rows[0]?.department;
+    }
+
     const [userRow, approved, pending, solved, assignedDoubts] = await Promise.all([
       db.query('SELECT points FROM users WHERE id=$1', [req.user.id]),
       db.query("SELECT COUNT(*) FROM materials WHERE uploader_id=$1 AND status='approved'", [req.user.id]),
       db.query("SELECT COUNT(*) FROM materials WHERE uploader_id=$1 AND status='pending' UNION ALL SELECT COUNT(*) FROM projects WHERE uploader_id=$1 AND status='pending'"),
       db.query("SELECT COUNT(*) FROM doubts WHERE answered_by=$1 AND status='answered'", [req.user.id]),
-      db.query("SELECT COUNT(*) FROM doubts WHERE assigned_senior_id=$1 AND status='open'", [req.user.id])
+      db.query("SELECT COUNT(*) FROM doubts WHERE status='open' AND (assigned_senior_id=$1 OR department=$2)", [req.user.id, req.user.department])
     ]);
     const pendingCount = pending.rows.reduce((s, r) => s + parseInt(r.count), 0);
     res.json({
