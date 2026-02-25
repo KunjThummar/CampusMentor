@@ -6,9 +6,16 @@ const fs = require('fs');
 
 const app = express();
 
-// ===== CORS =====
+// // ===== CORS =====
+// app.use(cors({
+//   origin: true,
+//   credentials: true
+// }));
+
+const cors = require('cors');
+
 app.use(cors({
-  origin: true,
+  origin: process.env.campus-mentor-alpha.vercel.app,
   credentials: true
 }));
 
