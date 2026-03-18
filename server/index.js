@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const app = express();
 
-// ✅ Correct CORS
+// ✅ CORS
 app.use(cors({
   origin: process.env.FRONTEND_URL || "*",
   credentials: true
@@ -15,10 +15,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploads
+// ✅ 🔥 FIXED STATIC PATH (IMPORTANT)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Ensure directories exist
+// ✅ Ensure directories exist (NO CHANGE)
 ['uploads/materials', 'uploads/projects', 'uploads/certificates'].forEach(dir => {
   const fullPath = path.join(__dirname, dir);
   if (!fs.existsSync(fullPath)) {
@@ -27,7 +27,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   }
 });
 
-// ROUTES
+// ================= ROUTES =================
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/materials', require('./routes/materials'));
 app.use('/api/projects', require('./routes/projects'));
@@ -42,7 +42,7 @@ app.get('/api/health', (req, res) =>
 
 require('./cron/escalationJob');
 
-// Global error handler
+// ================= ERROR HANDLING =================
 app.use((err, req, res, next) => {
   console.error('[Global Error]', err);
   res.status(err.status || 500).json({
@@ -55,8 +55,9 @@ app.use((req, res) => {
   res.status(404).json({ message: `Route not found: ${req.method} ${req.url}` });
 });
 
-// ✅ VERY IMPORTANT FOR RENDER
-const PORT = process.env.PORT || 5000;
+// ================= SERVER =================
+const PORT = process.env.PORT || 10000;
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
