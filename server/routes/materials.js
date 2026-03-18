@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs'); // ✅ added
+const fs = require('fs');
 const db = require('../db');
 const auth = require('../middleware/authMiddleware');
 const role = require('../middleware/roleMiddleware');
@@ -15,6 +15,7 @@ if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
+// multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadPath),
   filename: (req, file, cb) =>
@@ -23,22 +24,23 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
     const allowed = ['.pdf', '.doc', '.docx', '.ppt', '.pptx'];
     if (allowed.includes(path.extname(file.originalname).toLowerCase())) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Use PDF, DOC, or PPTX.'));
+      cb(new Error('Invalid file type. Use PDF, DOC, or PPT.'));
     }
   }
 });
 
 // ================= ROUTES =================
 
-// GET all materials
+// ✅ GET all materials
 router.get('/', async (req, res) => {
   const { status, subject, department, search, limit = 30, offset = 0 } = req.query;
+
   try {
     let q = `SELECT m.*, u.name as uploader_name 
              FROM materials m 
@@ -74,7 +76,16 @@ router.get('/', async (req, res) => {
     q += ` OFFSET $${params.length}`;
 
     const result = await db.query(q, params);
-    res.json({ materials: result.rows });
+
+    // ✅ IMPORTANT: attach download URL
+    const materials = result.rows.map(m => ({
+      ...m,
+      download_url: m.file_url
+        ? `${process.env.BASE_URL || ''}/api/materials/download/${m.file_url.split('/').pop()}`
+        : null
+    }));
+
+    res.json({ materials });
 
   } catch (err) {
     console.error(err);
@@ -82,20 +93,31 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET own materials
+
+// ✅ GET own materials
 router.get('/my', auth, async (req, res) => {
   try {
     const result = await db.query(
       'SELECT * FROM materials WHERE uploader_id = $1 ORDER BY created_at DESC',
       [req.user.id]
     );
-    res.json({ materials: result.rows });
-  } catch {
+
+    const materials = result.rows.map(m => ({
+      ...m,
+      download_url: m.file_url
+        ? `${process.env.BASE_URL || ''}/api/materials/download/${m.file_url.split('/').pop()}`
+        : null
+    }));
+
+    res.json({ materials });
+
+  } catch (err) {
     res.status(500).json({ message: 'Failed to fetch' });
   }
 });
 
-// UPLOAD
+
+// ✅ UPLOAD
 router.post('/', auth, role('senior'), upload.single('file'), async (req, res) => {
   const { title, subject, department, year, description } = req.body;
 
@@ -121,16 +143,20 @@ router.post('/', auth, role('senior'), upload.single('file'), async (req, res) =
   }
 });
 
-// ✅ 🔥 DOWNLOAD ROUTE (MAIN FIX)
+
+// ✅ 🔥 DOWNLOAD (MAIN FIX)
 router.get('/download/:filename', (req, res) => {
   const filePath = path.join(uploadPath, req.params.filename);
 
   if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ message: 'File not found' });
+    return res.status(404).json({
+      message: 'File not found (Render deletes files after redeploy)'
+    });
   }
 
-  res.download(filePath);
+  res.download(filePath, req.params.filename);
 });
+
 
 // ================= OTHER ROUTES =================
 
