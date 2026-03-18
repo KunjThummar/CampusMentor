@@ -7,6 +7,9 @@ const db = require('../db');
 const auth = require('../middleware/authMiddleware');
 const role = require('../middleware/roleMiddleware');
 
+// ================= CONFIG =================
+const BASE_URL = process.env.BASE_URL || 'https://campusmentor-63q5.onrender.com';
+
 // ================= UPLOAD SETUP =================
 const uploadPath = path.join(__dirname, '../uploads/materials');
 
@@ -77,13 +80,17 @@ router.get('/', async (req, res) => {
 
     const result = await db.query(q, params);
 
-    // ✅ IMPORTANT: attach download URL
-    const materials = result.rows.map(m => ({
-      ...m,
-      download_url: m.file_url
-        ? `${process.env.BASE_URL || ''}/api/materials/download/${m.file_url.split('/').pop()}`
-        : null
-    }));
+    // ✅ Attach proper download URL
+    const materials = result.rows.map(m => {
+      const filename = m.file_url ? m.file_url.split('/').pop() : null;
+
+      return {
+        ...m,
+        download_url: filename
+          ? `${BASE_URL}/api/materials/download/${filename}`
+          : null
+      };
+    });
 
     res.json({ materials });
 
@@ -102,12 +109,16 @@ router.get('/my', auth, async (req, res) => {
       [req.user.id]
     );
 
-    const materials = result.rows.map(m => ({
-      ...m,
-      download_url: m.file_url
-        ? `${process.env.BASE_URL || ''}/api/materials/download/${m.file_url.split('/').pop()}`
-        : null
-    }));
+    const materials = result.rows.map(m => {
+      const filename = m.file_url ? m.file_url.split('/').pop() : null;
+
+      return {
+        ...m,
+        download_url: filename
+          ? `${BASE_URL}/api/materials/download/${filename}`
+          : null
+      };
+    });
 
     res.json({ materials });
 
@@ -144,17 +155,18 @@ router.post('/', auth, role('senior'), upload.single('file'), async (req, res) =
 });
 
 
-// ✅ 🔥 DOWNLOAD (MAIN FIX)
+// ✅ DOWNLOAD (FIXED)
 router.get('/download/:filename', (req, res) => {
-  const filePath = path.join(uploadPath, req.params.filename);
+  const filename = req.params.filename;
+  const filePath = path.join(uploadPath, filename);
 
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({
-      message: 'File not found (Render deletes files after redeploy)'
+      message: 'File not found. Please re-upload (files reset after deploy).'
     });
   }
 
-  res.download(filePath, req.params.filename);
+  res.download(filePath, filename);
 });
 
 
