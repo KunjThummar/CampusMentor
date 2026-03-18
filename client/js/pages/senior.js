@@ -292,20 +292,71 @@ function switchTab(prefix, tabId) {
   if (el) el.classList.add('active');
 }
 
+// function materialCard(m) {
+//   return `<div class="material-card"><div><div class="material-title">${escHtml(m.title)}</div>
+//     <div class="material-meta" style="margin-top:8px"><span class="badge badge-approved">${escHtml(m.subject || '')}</span></div></div>
+//     <div class="flex justify-between items-center" style="margin-top:12px">
+//       <span class="material-info">👁 ${m.views || 0} views</span>
+//       ${m.file_url ? `<a href="${BASE_URL}${m.file_url}" target="_blank" class="btn btn-primary btn-sm">Download</a>` : ''}
+//     </div></div>`;
+// }
+
 function materialCard(m) {
-  return `<div class="material-card"><div><div class="material-title">${escHtml(m.title)}</div>
-    <div class="material-meta" style="margin-top:8px"><span class="badge badge-approved">${escHtml(m.subject || '')}</span></div></div>
+  return `<div class="material-card">
+    <div>
+      <div class="material-title">${escHtml(m.title)}</div>
+      <div class="material-meta" style="margin-top:8px">
+        <span class="badge badge-approved">${escHtml(m.subject || '')}</span>
+      </div>
+    </div>
+
     <div class="flex justify-between items-center" style="margin-top:12px">
       <span class="material-info">👁 ${m.views || 0} views</span>
-      ${m.file_url ? `<a href="${BASE_URL}${m.file_url}" target="_blank" class="btn btn-primary btn-sm">Download</a>` : ''}
-    </div></div>`;
+
+      ${m.download_url 
+        ? `<a href="${m.download_url}" target="_blank" class="btn btn-primary btn-sm">Download</a>` 
+        : ''}
+
+    </div>
+  </div>`;
 }
 
+// function myMaterialCard(m) {
+//   return `<div class="material-card"><div><div class="material-title">${escHtml(m.title)}</div>
+//     <div class="material-meta" style="margin-top:8px"><span class="badge badge-${m.status}">${m.status}</span><span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">${escHtml(m.subject || '')}</span></div></div>
+//     <div style="font-size:12px;color:var(--text-muted);margin-top:8px">${formatDate(m.created_at)}</div>
+//     ${m.status === 'rejected' && m.rejection_reason ? `<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">Rejected: ${escHtml(m.rejection_reason)}</div>` : ''}
+//   </div>`;
+// }
+
 function myMaterialCard(m) {
-  return `<div class="material-card"><div><div class="material-title">${escHtml(m.title)}</div>
-    <div class="material-meta" style="margin-top:8px"><span class="badge badge-${m.status}">${m.status}</span><span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">${escHtml(m.subject || '')}</span></div></div>
-    <div style="font-size:12px;color:var(--text-muted);margin-top:8px">${formatDate(m.created_at)}</div>
-    ${m.status === 'rejected' && m.rejection_reason ? `<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">Rejected: ${escHtml(m.rejection_reason)}</div>` : ''}
+  return `<div class="material-card">
+    <div>
+      <div class="material-title">${escHtml(m.title)}</div>
+
+      <div class="material-meta" style="margin-top:8px">
+        <span class="badge badge-${m.status}">${m.status}</span>
+        <span class="badge" style="background:var(--bg-hover);color:var(--text-secondary)">
+          ${escHtml(m.subject || '')}
+        </span>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--text-muted);margin-top:8px">
+      ${formatDate(m.created_at)}
+    </div>
+
+    ${m.download_url 
+      ? `<div style="margin-top:10px">
+          <a href="${m.download_url}" target="_blank" class="btn btn-primary btn-sm">Download</a>
+        </div>` 
+      : ''}
+
+    ${m.status === 'rejected' && m.rejection_reason 
+      ? `<div style="margin-top:8px;padding:8px;background:var(--danger-bg);border-radius:6px;font-size:12px;color:var(--danger)">
+          Rejected: ${escHtml(m.rejection_reason)}
+        </div>` 
+      : ''}
   </div>`;
 }
 
