@@ -19,6 +19,7 @@ function clearAuth() {
   localStorage.removeItem(USER_KEY);
 }
 
+//logout 
 function logout() {
   clearAuth();
   window.location.href = '/login.html';
